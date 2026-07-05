@@ -3,6 +3,8 @@
 
 **SBI Hackathon @ Global Fintech Fest 2026** · Theme: Agentic AI & Emerging Tech · Problem Statement: Customer Acquisition
 
+### ▶️ [**Open the live prototype (one click)**](https://adipal10.github.io/sbi-saarthi/) &nbsp;|&nbsp; [▶️ Watch the pitch reel](https://adipal10.github.io/sbi-saarthi/SBI_Saarthi_Pitch.html)
+
 SBI Saarthi is a single agentic-AI companion that carries a customer across the whole banking lifecycle. It finds creditworthy but "invisible" customers (like Ramesh, a kirana-store owner) from consented data, opens their account in one WhatsApp or voice chat in their own language, funds their business through SBI's loan engine, helps them start small investments, and keeps them safe from fraud — all with a human one tap away.
 
 ---
@@ -12,9 +14,9 @@ SBI Saarthi is a single agentic-AI companion that carries a customer across the 
 > Once GitHub Pages is enabled (see below), these links go live:
 
 - **Interactive prototype** — talk to Saarthi, drive the flow yourself:
-  `https://<your-username>.github.io/sbi-saarthi/index.html`
+  `https://adipal10.github.io/sbi-saarthi/index.html`
 - **Pitch reel** — the auto-playing story of Ramesh:
-  `https://<your-username>.github.io/sbi-saarthi/SBI_Saarthi_Pitch.html`
+  `https://adipal10.github.io/sbi-saarthi/SBI_Saarthi_Pitch.html`
 
 You can also just **download this repo and open `index.html`** in any browser — it runs fully offline, no install.
 
