@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SBI Saarthi — Interactive Demo</title>
+<style>
+  :root{
+    --navy:#0B1E3F; --navy2:#122a53; --sbi:#1B4B9B; --sbi-lt:#3D6FD1;
+    --teal:#00A896; --gold:#F6A623; --green:#16A34A; --red:#E11D48;
+    --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#eef2f9; --card:#ffffff;
+    --wa-head:#128C7E; --wa-bg:#e6ddd4; --wa-out:#dcf8c6; --wa-in:#ffffff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+    background:radial-gradient(1200px 700px at 15% -10%,#16305e 0%,var(--navy) 55%);
+    color:var(--ink); min-height:100vh; padding:18px 20px 40px;
+  }
+  .top{display:flex;align-items:center;gap:16px;margin:2px 4px 18px;flex-wrap:wrap}
+  .logo{display:flex;align-items:center;gap:12px}
+  .logo .mark{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--gold),#ff7a45);
+    display:grid;place-items:center;font-weight:800;color:#3a1d00;font-size:20px;box-shadow:0 6px 18px rgba(246,166,35,.35)}
+  .logo h1{color:#fff;margin:0;font-size:21px;letter-spacing:.3px}
+  .logo p{margin:1px 0 0;color:#a9c0e8;font-size:12.5px;font-weight:600;letter-spacing:2px}
+  .pills{display:flex;gap:8px;margin-left:6px}
+  .pill{background:rgba(255,255,255,.09);color:#dbe6fb;border:1px solid rgba(255,255,255,.14);
+    padding:5px 11px;border-radius:999px;font-size:11.5px;font-weight:600}
+  .controls{margin-left:auto;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+  .btn{border:0;cursor:pointer;font-weight:700;border-radius:11px;padding:10px 16px;font-size:13.5px;transition:.15s;font-family:inherit}
+  .btn.play{background:linear-gradient(135deg,var(--gold),#ff8a3d);color:#3a1d00;box-shadow:0 6px 18px rgba(246,166,35,.4)}
+  .btn.play:hover{transform:translateY(-1px)}
+  .btn.ghost{background:rgba(255,255,255,.08);color:#dbe6fb;border:1px solid rgba(255,255,255,.18)}
+  .btn.ghost:hover{background:rgba(255,255,255,.16)}
+  .btn:disabled{opacity:.45;cursor:default;transform:none}
+  .langsel{display:flex;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px;overflow:hidden}
+  .langsel button{border:0;background:transparent;color:#cfe0ff;padding:9px 12px;font-weight:700;font-size:12.5px;cursor:pointer;font-family:inherit}
+  .langsel button.on{background:var(--gold);color:#3a1d00}
+
+  .stage{display:grid;grid-template-columns:392px 1fr;gap:22px;align-items:start;max-width:1330px;margin:0 auto}
+  @media(max-width:1050px){.stage{grid-template-columns:1fr}}
+
+  /* ---------- PHONE ---------- */
+  .phone{background:#0a0a0a;border-radius:38px;padding:12px;box-shadow:0 24px 60px rgba(0,0,0,.5);position:relative;justify-self:center}
+  .phone::before{content:"";position:absolute;top:20px;left:50%;transform:translateX(-50%);width:120px;height:22px;background:#0a0a0a;border-radius:0 0 16px 16px;z-index:5}
+  .screen{width:362px;height:722px;background:var(--wa-bg);border-radius:28px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+  .wa-head{background:var(--wa-head);color:#fff;padding:14px 14px 12px;display:flex;align-items:center;gap:11px;padding-top:26px}
+  .wa-head .av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#ff7a45);display:grid;place-items:center;font-weight:800;color:#3a1d00}
+  .wa-head .nm{font-weight:700;font-size:15px;line-height:1.1}
+  .wa-head .st{font-size:11px;color:#cdeee7}
+  .wa-head .ico{margin-left:auto;opacity:.9;font-size:17px}
+  .chat{flex:1;overflow-y:auto;padding:14px 12px 8px;display:flex;flex-direction:column;gap:9px;
+    background-image:linear-gradient(rgba(229,221,212,.6),rgba(229,221,212,.6))}
+  .chat::-webkit-scrollbar{width:0}
+  .msg{max-width:82%;padding:8px 11px 7px;border-radius:9px;font-size:13.5px;line-height:1.42;box-shadow:0 1px 1px rgba(0,0,0,.12);position:relative;animation:pop .28s ease}
+  @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+  .msg.in{background:var(--wa-in);align-self:flex-start;border-top-left-radius:2px}
+  .msg.out{background:var(--wa-out);align-self:flex-end;border-top-right-radius:2px}
+  .msg .en{display:block;color:var(--muted);font-size:11.5px;margin-top:3px;font-style:italic}
+  .msg .tm{font-size:9.5px;color:#9aa;float:right;margin:5px 0 -2px 8px}
+  .msg.voice{display:flex;align-items:center;gap:9px;min-width:150px}
+  .msg.voice .vp{width:26px;height:26px;border-radius:50%;background:var(--wa-head);color:#fff;display:grid;place-items:center;flex:none;cursor:pointer}
+  .msg.voice .wave{flex:1;height:22px;background:repeating-linear-gradient(90deg,#bcd 0 2px,transparent 2px 5px);border-radius:4px;opacity:.6}
+  .card-msg{max-width:88%;align-self:flex-start;background:#fff;border-radius:12px;padding:0;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.14);animation:pop .3s ease}
+  .card-msg .h{padding:9px 12px;color:#fff;font-weight:700;font-size:12.5px;display:flex;align-items:center;gap:7px}
+  .card-msg .b{padding:10px 12px;font-size:12.5px;color:#233}
+  .card-msg .b b{font-size:16px}
+  .agenttag{align-self:center;background:rgba(11,30,63,.9);color:#cfe0ff;font-size:10px;font-weight:700;
+    padding:3px 10px;border-radius:999px;letter-spacing:.5px;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+  .typing{align-self:flex-start;background:#fff;border-radius:9px;padding:9px 13px;display:flex;gap:4px;box-shadow:0 1px 1px rgba(0,0,0,.12)}
+  .typing span{width:7px;height:7px;border-radius:50%;background:#9ab;animation:bl 1.1s infinite}
+  .typing span:nth-child(2){animation-delay:.18s}.typing span:nth-child(3){animation-delay:.36s}
+  @keyframes bl{0%,60%,100%{opacity:.3}30%{opacity:1}}
+  .scam-in{background:#fff;border-left:4px solid var(--red)}
+
+  /* chips + input */
+  .chips{display:flex;flex-wrap:wrap;gap:7px;padding:8px 12px 4px;background:var(--wa-bg)}
+  .chip{background:#fff;border:1.5px solid var(--wa-head);color:var(--wa-head);border-radius:999px;
+    padding:7px 13px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:.12s;animation:pop .25s}
+  .chip:hover{background:var(--wa-head);color:#fff}
+  .chip.danger{border-color:var(--red);color:var(--red)}
+  .chip.danger:hover{background:var(--red);color:#fff}
+  .chip.rec{background:#eafaf0;border-color:var(--green);color:#0a7a3f}
+  .chip.rec:hover{background:var(--green);color:#fff}
+  .inputbar{display:flex;align-items:center;gap:8px;padding:9px 10px;background:#f0f0f0}
+  .inputbar input{flex:1;border:0;border-radius:22px;padding:11px 15px;font-size:13.5px;font-family:inherit;background:#fff;outline:none}
+  .inputbar .snd{width:42px;height:42px;border-radius:50%;background:var(--wa-head);color:#fff;border:0;font-size:18px;cursor:pointer;flex:none}
+  .inputbar .snd:hover{filter:brightness(1.08)}
+
+  /* ---------- DASHBOARD ---------- */
+  .app{background:var(--card);border-radius:20px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.35);min-height:746px;display:flex;flex-direction:column}
+  .app-head{background:linear-gradient(120deg,var(--navy),var(--sbi));color:#fff;padding:14px 20px;display:flex;align-items:center;gap:14px}
+  .app-head .who{display:flex;align-items:center;gap:12px}
+  .app-head .who .av{width:46px;height:46px;border-radius:12px;background:#fff;color:var(--sbi);display:grid;place-items:center;font-weight:800;font-size:19px}
+  .app-head .who h2{margin:0;font-size:17px}
+  .app-head .who p{margin:2px 0 0;font-size:12px;color:#bcd3f7}
+  .yono{margin-left:2px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);color:#fff;
+    font-size:10px;font-weight:800;padding:4px 9px;border-radius:7px;letter-spacing:.5px}
+  .trust{margin-left:auto;text-align:right}
+  .trust .score{font-size:26px;font-weight:800;color:var(--gold);line-height:1;transition:.3s}
+  .trust .lbl{font-size:10.5px;color:#bcd3f7;letter-spacing:.5px}
+  .tabs{display:flex;gap:4px;padding:10px 14px 0;background:#f7f9fd;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .tab{border:0;background:transparent;padding:11px 15px;font-weight:700;font-size:13px;color:var(--muted);cursor:pointer;
+    border-bottom:3px solid transparent;font-family:inherit;display:flex;align-items:center;gap:7px;transition:.15s}
+  .tab:hover{color:var(--sbi)}
+  .tab.active{color:var(--sbi);border-bottom-color:var(--sbi)}
+  .tab .dot{width:7px;height:7px;border-radius:50%;background:var(--red);display:none}
+  .tab.alert .dot{display:inline-block;animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  .panels{flex:1;padding:20px;background:var(--bg);overflow:auto}
+  .panel{display:none;animation:fade .3s ease}
+  .panel.show{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}
+  @media(max-width:640px){.g2,.g3{grid-template-columns:1fr}}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px}
+  .box h3{margin:0 0 3px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+  .stat{font-size:27px;font-weight:800;color:var(--ink)}
+  .stat.sm{font-size:20px}
+  .sub{font-size:12px;color:var(--muted);margin-top:3px}
+
+  .prodlist{display:flex;flex-direction:column;gap:10px}
+  .prod{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff;
+    opacity:.4;filter:grayscale(1);transition:.4s}
+  .prod.on{opacity:1;filter:none;border-color:#cfe0ff;box-shadow:0 4px 14px rgba(27,75,155,.08)}
+  .prod .ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;font-size:19px;color:#fff;flex:none}
+  .prod .nm{font-weight:700;font-size:14px}
+  .prod .ds{font-size:12px;color:var(--muted)}
+  .prod .badge{margin-left:auto;font-size:10.5px;font-weight:700;color:#9aa}
+  .prod.on .badge{color:var(--green)}
+
+  .feed{display:flex;flex-direction:column;gap:0;max-height:290px;overflow:auto}
+  .fitem{display:flex;gap:11px;padding:11px 2px;border-bottom:1px dashed var(--line);animation:pop .3s ease}
+  .fitem:last-child{border-bottom:0}
+  .fitem .fi{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:13px;color:#fff;flex:none;font-weight:700}
+  .fitem .ft{font-size:13px;font-weight:600}
+  .fitem .fs{font-size:11.5px;color:var(--muted)}
+  .fitem .fm{margin-left:auto;font-size:10.5px;color:#9aa;white-space:nowrap}
+  .empty{color:#9aa;font-size:13px;text-align:center;padding:30px 0}
+
+  .layers{display:flex;flex-direction:column;gap:12px}
+  .agentrow{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+  @media(max-width:640px){.agentrow{grid-template-columns:1fr 1fr 1fr}}
+  .ag{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 9px;text-align:center;transition:.3s;position:relative}
+  .ag.live{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,168,150,.16);transform:translateY(-2px)}
+  .ag .agn{font-weight:800;font-size:13px;color:var(--sbi)}
+  .ag .agr{font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.3}
+  .ag .liveflag{position:absolute;top:-8px;right:-6px;background:var(--teal);color:#fff;font-size:9px;font-weight:800;
+    padding:2px 7px;border-radius:999px;display:none}
+  .ag.live .liveflag{display:block}
+  .layer{display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .layer .lname{font-weight:800;font-size:14px}
+  .layer .lname small{display:block;color:var(--muted);font-weight:600;font-size:11px}
+  .layer .ldesc{font-size:12.5px;color:#334}
+
+  .abhyas{background:repeating-linear-gradient(45deg,#fff6df,#fff6df 14px,#ffedc2 14px,#ffedc2 28px);
+    border:2px dashed var(--gold);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .abhyas .tag{background:var(--gold);color:#3a1d00;font-weight:800;font-size:12px;padding:5px 11px;border-radius:8px;white-space:nowrap}
+  .abhyas .tx{font-size:12.5px;color:#5a4a1a;font-weight:600}
+  .sim{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+  .sim .bal{display:flex;align-items:baseline;gap:8px;margin-bottom:14px}
+  .sim .bal .n{font-size:30px;font-weight:800;color:var(--gold)}
+  .sim .bal .l{font-size:12px;color:var(--muted)}
+  .field{margin-bottom:11px}
+  .field label{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:5px}
+  .field input,.field select{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit}
+  .field input:focus{outline:0;border-color:var(--sbi)}
+  .simbtns{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .b2{border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer;font-size:13.5px;font-family:inherit;transition:.15s}
+  .b2.pr{background:var(--sbi);color:#fff}.b2.pr:hover{background:var(--sbi-lt)}
+  .b2.go{background:var(--green);color:#fff}.b2.go:hover{filter:brightness(1.08)}
+  .b2.gh{background:#eef2f9;color:var(--sbi)}
+  .b2:disabled{opacity:.5;cursor:default}
+  .simlog{margin-top:14px;display:flex;flex-direction:column;gap:7px}
+  .simlog .e{font-size:12.5px;padding:9px 11px;border-radius:9px;background:#f3f7ff;border-left:3px solid var(--sbi);animation:pop .25s}
+  .simlog .e.ok{background:#eafaf0;border-left-color:var(--green)}
+  .simlog .e.real{background:#fff4e0;border-left-color:var(--gold);font-weight:700}
+
+  .shield{text-align:center;padding:8px 0 4px}
+  .shield .ring{width:96px;height:96px;border-radius:50%;margin:0 auto 10px;display:grid;place-items:center;font-size:44px;
+    background:radial-gradient(circle,#eafaf0,#c8f0d8);border:3px solid var(--green);transition:.4s}
+  .shield.blocked .ring{background:radial-gradient(circle,#ffe4ea,#ffc9d6);border-color:var(--red);animation:shake .5s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .shield .stt{font-weight:800;font-size:16px;color:var(--green)}
+  .shield.blocked .stt{color:var(--red)}
+  .kexplain{background:#fff;border:1px solid var(--line);border-radius:14px;padding:0;overflow:hidden;margin-top:14px;display:none}
+  .kexplain.show{display:block;animation:pop .3s}
+  .kexplain .kh{background:var(--red);color:#fff;padding:12px 16px;font-weight:800;font-size:14px;display:flex;align-items:center;gap:9px}
+  .kexplain .kb{padding:16px}
+  .kexplain .row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+  .kexplain .row:last-child{border-bottom:0}
+  .kexplain .row .ki{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;flex:none;color:#fff;font-weight:800}
+  .kfeatures{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  @media(max-width:640px){.kfeatures{grid-template-columns:1fr}}
+  .kf{background:#fff;border:1px solid var(--line);border-radius:11px;padding:11px 13px;font-size:12.5px}
+  .kf b{display:block;color:var(--sbi);font-size:13px;margin-bottom:2px}
+  .demoline{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+
+  .progress{max-width:1330px;margin:16px auto 0;display:flex;gap:6px}
+  .pstep{flex:1;height:6px;border-radius:999px;background:rgba(255,255,255,.15);position:relative;overflow:hidden}
+  .pstep.done{background:var(--gold)}
+  .plabels{max-width:1330px;margin:6px auto 0;display:flex;gap:6px}
+  .plabels div{flex:1;text-align:center;font-size:10px;color:#9db4dd;font-weight:600}
+  .plabels div.now{color:var(--gold)}
+  .hint{max-width:1330px;margin:14px auto 0;color:#9db4dd;font-size:12px;text-align:center}
+  .hint b{color:#cfe0ff}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="logo">
+    <div class="mark">सा</div>
+    <div><h1>SBI Saarthi</h1><p>SPEAK · LEARN · PROTECT</p></div>
+  </div>
+  <div class="pills">
+    <span class="pill">6 Agents</span>
+    <span class="pill">3 Layers</span>
+    <span class="pill">One Memory</span>
+  </div>
+  <div class="controls">
+    <div class="langsel" id="langsel">
+      <button data-lang="hinglish" class="on">हिं+EN</button>
+      <button data-lang="hi">हिंदी</button>
+      <button data-lang="en">EN</button>
+    </div>
+    <button class="btn play" id="playBtn">▶ Auto-play</button>
+    <button class="btn ghost" id="resetBtn">↺ Reset</button>
+  </div>
+</div>
+
+<div class="stage">
+  <!-- PHONE -->
+  <div class="phone">
+    <div class="screen">
+      <div class="wa-head">
+        <div class="av">सा</div>
+        <div><div class="nm">SBI Saarthi</div><div class="st" id="waStatus">online</div></div>
+        <div class="ico">⋮</div>
+      </div>
+      <div class="chat" id="chat"></div>
+      <div class="chips" id="chips"></div>
+      <div class="inputbar">
+        <input id="userInput" placeholder="Type in Hindi or English…  (try: loan / SIP / is it safe?)" autocomplete="off" />
+        <button class="snd" id="sendBtn">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="app">
+    <div class="app-head">
+      <div class="who">
+        <div class="av">रा</div>
+        <div><h2>Ramesh Kumar</h2><p id="profile">Kirana store · Hindi · New-to-bank</p></div>
+      </div>
+      <span class="yono">via YONO + WhatsApp</span>
+      <div class="trust">
+        <div class="score" id="trustScore">—</div>
+        <div class="lbl">RELATIONSHIP SCORE</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="dash">🏠 Dashboard</button>
+      <button class="tab" data-tab="sikho">🎓 Sikho</button>
+      <button class="tab" data-tab="kavach" id="kavachTab">🛡️ Kavach <span class="dot"></span></button>
+      <button class="tab" data-tab="arch">🧠 Architecture</button>
+    </div>
+
+    <div class="panels">
+      <!-- DASHBOARD -->
+      <div class="panel show" data-panel="dash">
+        <div class="grid g3" style="margin-bottom:14px">
+          <div class="box"><h3>Products held</h3><div class="stat" id="mProducts">0</div><div class="sub">was 0 at acquisition</div></div>
+          <div class="box"><h3>Credit sanctioned</h3><div class="stat sm" id="mCredit">₹0</div><div class="sub">Punji · cash-flow engine</div></div>
+          <div class="box"><h3>Invested / mo</h3><div class="stat sm" id="mInvest">₹0</div><div class="sub">Nivesh · via Sikho</div></div>
+        </div>
+        <div class="grid g2">
+          <div class="box">
+            <h3>Product holdings</h3>
+            <div class="prodlist" id="prodlist">
+              <div class="prod" data-p="acct"><div class="ic" style="background:var(--sbi)">🏦</div>
+                <div><div class="nm">Savings Account</div><div class="ds">Ek Baat-cheet · 1-chat KYC</div></div><div class="badge">locked</div></div>
+              <div class="prod" data-p="loan"><div class="ic" style="background:var(--teal)">💼</div>
+                <div><div class="nm">Working Capital</div><div class="ds">Punji · 10-sec decision</div></div><div class="badge">locked</div></div>
+              <div class="prod" data-p="sip"><div class="ic" style="background:var(--gold)">📈</div>
+                <div><div class="nm">Micro-SIP</div><div class="ds">Nivesh · practiced in Sikho</div></div><div class="badge">locked</div></div>
+              <div class="prod" data-p="goal"><div class="ic" style="background:#8b5cf6">🎯</div>
+                <div><div class="nm">Goal SIP · Daughter</div><div class="ds">Zindagi Radar · life-event</div></div><div class="badge">locked</div></div>
+            </div>
+          </div>
+          <div class="box">
+            <h3>Live agent activity</h3>
+            <div class="feed" id="feed"><div class="empty">Talk to Saarthi (or press ▶ Auto-play). Agents act here in real time.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIKHO -->
+      <div class="panel" data-panel="sikho">
+        <div class="abhyas">
+          <span class="tag">अभ्यास · PRACTICE MODE</span>
+          <span class="tx">Safe simulator. No real money moves until you tap "Graduate to real".</span>
+        </div>
+        <div class="grid g2">
+          <div class="sim">
+            <div class="bal"><span class="n" id="playBal">₹10,000</span><span class="l">play money</span></div>
+            <div class="field"><label>Action</label>
+              <select id="simAction"><option value="upi">Send money (UPI)</option><option value="sip">Start a mock SIP</option></select></div>
+            <div class="field"><label>Amount (₹)</label><input id="simAmt" type="number" value="500" /></div>
+            <div class="simbtns">
+              <button class="b2 pr" id="simRun">▶ Try it (practice)</button>
+              <button class="b2 go" id="simGrad" disabled>✓ Graduate to real</button>
+              <button class="b2 gh" id="simReset">Reset ₹10,000</button>
+            </div>
+            <div class="simlog" id="simlog"></div>
+          </div>
+          <div class="box">
+            <h3>Why Sikho wins adoption</h3>
+            <div style="font-size:13px;line-height:1.6;color:#334">
+              <p style="margin:.2em 0"><b>Watch-then-try</b> — Saarthi animates the real screen, then coaches the user's own fingers, in their language.</p>
+              <p style="margin:.6em 0"><b>Fear is the #1 blocker</b> — "what if I lose money?" A pilot practises in a simulator before flying. So should a first-time investor.</p>
+              <p style="margin:.6em 0"><b>Graduate in one tap</b> — the mock ₹500 SIP becomes a real ₹500 SIP with consent + OTP.</p>
+              <p style="margin:.6em 0"><b>Family co-pilot</b> — a savvy relative can watch and guide with read-only access.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KAVACH -->
+      <div class="panel" data-panel="kavach">
+        <div class="shield" id="shield">
+          <div class="ring" id="shieldRing">🛡️</div>
+          <div class="stt" id="shieldStt">ALL CLEAR · monitoring every transaction</div>
+        </div>
+        <div class="kexplain" id="kexplain">
+          <div class="kh">🛑 Kavach blocked a scam — here's what it caught</div>
+          <div class="kb">
+            <div class="row"><div class="ki" style="background:var(--red)">₹</div>
+              <div><b>This is a COLLECT request, not a payment.</b> "आपको ₹9,500 मिलेंगे नहीं — कटेंगे।" You would be <b>sending</b>, not receiving.</div></div>
+            <div class="row"><div class="ki" style="background:var(--gold)">!</div>
+              <div>Sender is an <b>unknown first-time payee</b> using a fake "Diwali cashback" label — a known scam signature.</div></div>
+            <div class="row"><div class="ki" style="background:var(--sbi)">✓</div>
+              <div>Explained in Hindi, request auto-declined, cool-off applied. Ramesh keeps his ₹9,500.</div></div>
+          </div>
+        </div>
+        <div class="kfeatures">
+          <div class="kf"><b>Plain-language explainer</b>"You are SENDING, not receiving" before every transaction.</div>
+          <div class="kf"><b>Scam-pattern radar</b>Fake collect requests, KYC-expiry calls, screen-share apps, QR receive-tricks.</div>
+          <div class="kf"><b>Cool-off + human check</b>First-time payee + high amount = pause & call-back.</div>
+          <div class="kf"><b>Elder-safe + family alert</b>Slower pace, bigger confirmations, optional trusted-family ping.</div>
+        </div>
+        <div class="demoline">
+          <button class="b2 pr" id="kSim">▶ Simulate incoming scam</button>
+          <button class="b2 gh" id="kReset">Reset shield</button>
+        </div>
+      </div>
+
+      <!-- ARCHITECTURE -->
+      <div class="panel" data-panel="arch">
+        <div class="box" style="margin-bottom:14px">
+          <h3>Six lifecycle agents · one shared memory</h3>
+          <div class="agentrow" id="agentrow" style="margin-top:10px">
+            <div class="ag" data-ag="pehchaan"><div class="agn">Pehchaan</div><div class="agr">find + qualify</div><span class="liveflag">LIVE</span></div>
+            <div class="ag" data-ag="ekbaat"><div class="agn">Ek Baat-cheet</div><div class="agr">1-chat onboard</div><span class="liveflag">LIVE</span></div>
+            <div class="ag" data-ag="punji"><div class="agn">Punji</div><div class="agr">MSME credit</div><span class="liveflag">LIVE</span></div>
+            <div class="ag" data-ag="aadat"><div class="agn">Aadat</div><div class="agr">activate</div><span class="liveflag">LIVE</span></div>
+            <div class="ag" data-ag="nivesh"><div class="agn">Nivesh</div><div class="agr">grow wealth</div><span class="liveflag">LIVE</span></div>
+            <div class="ag" data-ag="radar"><div class="agn">Zindagi Radar</div><div class="agr">life-events</div><span class="liveflag">LIVE</span></div>
+          </div>
+        </div>
+        <div class="layers">
+          <div class="layer"><div class="lname">Boliye<small>SPEAK</small></div><div class="ldesc">Vernacular voice across 22 languages via Bhashini — down to feature-phone IVR. Every agent inherits it.</div></div>
+          <div class="layer"><div class="lname" style="color:var(--gold)">Sikho<small>LEARN</small></div><div class="ldesc">Play-money practice sandbox + watch-then-try coaching. Turns "I'm scared to press the button" into muscle memory, then graduates to real.</div></div>
+          <div class="layer"><div class="lname" style="color:var(--red)">Kavach<small>PROTECT</small></div><div class="ldesc">Plain-language fraud shield on every transaction: scam-pattern radar, anti-deepfake voice, cool-off, elder-safe mode.</div></div>
+        </div>
+        <div class="box" style="margin-top:14px">
+          <h3>Distribution — one brain, two doorways</h3>
+          <div style="font-size:12.5px;color:#334;margin-top:6px;line-height:1.5">
+            <b>Outside YONO</b> (WhatsApp + IVR + BC) acquires invisible customers who have no app yet.
+            <b>Inside YONO</b> the same agent + memory graph runs adoption &amp; engagement for the 74M existing base.
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+            <span class="pill" style="background:#eef2f9;color:var(--sbi);border-color:var(--line)">Account Aggregator · consent</span>
+            <span class="pill" style="background:#eef2f9;color:var(--sbi);border-color:var(--line)">Aadhaar + DigiLocker</span>
+            <span class="pill" style="background:#eef2f9;color:var(--sbi);border-color:var(--line)">Memory graph</span>
+            <span class="pill" style="background:#eef2f9;color:var(--sbi);border-color:var(--line)">YONO SDK</span>
+            <span class="pill" style="background:#eef2f9;color:var(--sbi);border-color:var(--line)">Human-in-loop</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="progress" id="progress"></div>
+<div class="plabels" id="plabels"></div>
+<div class="hint">You drive it: <b>tap a reply chip</b> or <b>type your own</b> (Hindi or English). Try “<b>loan chahiye</b>”, “<b>is it safe?</b>”, “<b>SIP</b>”, “<b>fraud</b>”. Or hit <b>▶ Auto-play</b> to run the story hands-free.</div>
+
+<script>
+(function(){
+  const chat=document.getElementById('chat'), feed=document.getElementById('feed'),
+        chipsEl=document.getElementById('chips'), waStatus=document.getElementById('waStatus');
+  let lang='hinglish', busy=false, autoOn=false, autoTimer=null, node='intro', ended=false;
+
+  // ---------- dashboard helpers ----------
+  function feedAdd(letter,color,title,sub){ const f=feed.querySelector('.empty'); if(f) feed.innerHTML='';
+    const el=div('fitem'); el.innerHTML=`<div class="fi" style="background:${color}">${letter}</div>
+      <div><div class="ft">${title}</div><div class="fs">${sub}</div></div><div class="fm">just now</div>`; feed.prepend(el); }
+  function prodOn(p){ const el=document.querySelector('.prod[data-p="'+p+'"]'); if(!el||el.classList.contains('on'))return;
+    el.classList.add('on'); const b=el.querySelector('.badge'); if(b)b.textContent='active';
+    setTxt('mProducts', document.querySelectorAll('.prod.on').length); }
+  function setTxt(id,v){ const e=document.getElementById(id); if(e)e.textContent=v; }
+  function score(v){ setTxt('trustScore',v); }
+  function div(c){ const d=document.createElement('div'); d.className=c; return d; }
+  function liveAgent(id){ document.querySelectorAll('.ag').forEach(a=>a.classList.remove('live'));
+    if(id){ const el=document.querySelector('.ag[data-ag="'+id+'"]'); if(el)el.classList.add('live'); } }
+
+  function switchTab(name){ document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('show',p.dataset.panel===name)); }
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{ switchTab(t.dataset.tab);
+    if(t.dataset.tab==='kavach') document.getElementById('kavachTab').classList.remove('alert'); }));
+
+  // ---------- text picker by language ----------
+  function pick(o){ if(typeof o==='string') return {hi:o,en:''};
+    if(lang==='en') return {hi:o.en||o.hi,en:''};
+    if(lang==='hi') return {hi:o.hi,en:''};
+    return {hi:o.hi,en:o.en||''}; }
+
+  // ---------- render bubbles ----------
+  function bubble(kind,payload){
+    let el;
+    if(kind==='agent'){ el=div('agenttag'); el.textContent=payload; }
+    else if(kind==='card'){ el=div('card-msg'); el.innerHTML=`<div class="h" style="background:${payload.color}">${payload.h}</div><div class="b">${payload.b}</div>`; }
+    else if(kind==='voice'){ el=div('msg voice out'); el.innerHTML=`<div class="vp">▶</div><div class="wave"></div><span style="font-size:11px;color:#678">${payload}</span>`; }
+    else if(kind==='scam'){ el=div('msg in scam-in'); const t=pick(payload); el.innerHTML=`${t.hi}${t.en?'<span class="en">'+t.en+'</span>':''}<span class="tm">10:42</span>`; }
+    else { const t=pick(payload); el=div('msg '+kind); el.innerHTML=`${t.hi}${t.en?'<span class="en">'+t.en+'</span>':''}<span class="tm">now</span>`; }
+    chat.appendChild(el); chat.scrollTop=chat.scrollHeight; return el;
+  }
+  function userSay(text){ const el=div('msg out'); el.innerHTML=`${text}<span class="tm">now</span>`; chat.appendChild(el); chat.scrollTop=chat.scrollHeight; }
+
+  async function saarthiSay(items){
+    waStatus.textContent='typing…';
+    const tp=div('typing'); tp.innerHTML='<span></span><span></span><span></span>'; chat.appendChild(tp); chat.scrollTop=chat.scrollHeight;
+    await wait(560); tp.remove(); waStatus.textContent='online';
+    for(const it of items){ bubble(it.k, it.p); await wait(430); }
+  }
+  function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+  // ---------- conversation graph ----------
+  const N = {
+    intro:{ phase:0, tab:'dash', agent:'pehchaan',
+      say:[{k:'agent',p:'Pehchaan · identify + qualify'},
+        {k:'in',p:{hi:'नमस्ते रमेश जी! 🙏 मैं SBI Saarthi। आपकी दुकान के UPI लेन-देन से लगता है आप ₹3 लाख तक का working-capital loan ले सकते हैं। देखेंगे?',
+          en:'Hi Ramesh! Your shop\'s UPI turnover suggests you qualify for a ₹3 lakh working-capital line. Shall we look?'}}],
+      fx:()=>{ feedAdd('P','var(--sbi)','Pehchaan flagged a creditworthy MSME','UPI velocity + GST regular · invisible to bureau'); score(28); },
+      chips:[{l:{hi:'हाँ, बताइए',en:'Yes, tell me'},go:'onboard',rec:true},{l:{hi:'यह सुरक्षित है?',en:'Is this safe?'},go:'trust'}] },
+
+    trust:{ phase:0, tab:'arch',
+      say:[{k:'in',p:{hi:'बिल्कुल। मैं सिर्फ आपकी अनुमति (Account Aggregator) से डेटा देखता हूँ, कोई भी बड़ा फैसला इंसान जाँचता है, और हर लेन-देन Kavach सुरक्षा से गुज़रता है।',
+        en:'Fully. I only use consented Account Aggregator data, a human checks any big decision, and every transaction passes Kavach fraud shield.'}}],
+      fx:()=>{ feedAdd('🔒','var(--sbi)','Trust explained','AA consent · human-in-loop · Kavach'); },
+      chips:[{l:{hi:'ठीक है, आगे बढ़ो',en:'OK, go ahead'},go:'onboard',rec:true}] },
+
+    onboard:{ phase:1, tab:'dash', agent:'ekbaat',
+      say:[{k:'agent',p:'Ek Baat-cheet · one-chat onboarding'},
+        {k:'in',p:{hi:'बढ़िया! खाता खोलने के लिए बस Aadhaar OTP दीजिए — कोई फॉर्म नहीं, कोई शाखा नहीं।',
+          en:'Great! Just share your Aadhaar OTP to open the account — no forms, no branch.'}}],
+      chips:[{l:{hi:'OTP भेज दिया ✅',en:'Sent the OTP ✅'},go:'accountDone',rec:true},{l:{hi:'मुझे हिंदी में बोलो',en:'Talk to me in Hindi'},go:'onboard2'}] },
+
+    onboard2:{ phase:1, tab:'dash', agent:'ekbaat',
+      say:[{k:'voice',p:'0:05 · Boliye voice'},
+        {k:'in',p:{hi:'जी ज़रूर — मैं आवाज़ में भी बात कर सकता हूँ। अब बस Aadhaar OTP बोल दीजिए।',
+          en:'Of course — I can speak by voice too. Now just say the Aadhaar OTP.'}}],
+      chips:[{l:{hi:'OTP भेज दिया ✅',en:'Sent the OTP ✅'},go:'accountDone',rec:true}] },
+
+    accountDone:{ phase:1, tab:'dash', agent:'ekbaat',
+      say:[{k:'card',p:{color:'var(--sbi)',h:'🏦 DigiLocker e-KYC',b:'Identity fetched · <b>Savings A/C opened ✅</b>'}},
+        {k:'in',p:{hi:'खाता खुल गया! अब आपके व्यापार के लिए वो loan देखें?',en:'Account opened! Now shall we look at that business loan?'}}],
+      fx:()=>{ prodOn('acct'); feedAdd('E','var(--sbi)','Account opened in one chat','Aadhaar e-KYC via DigiLocker · 0 forms'); score(46); },
+      chips:[{l:{hi:'हाँ, loan दिखाओ',en:'Yes, show the loan'},go:'loanDone',rec:true},{l:{hi:'अभी नहीं',en:'Not now'},go:'aadat'}] },
+
+    loanDone:{ phase:2, tab:'dash', agent:'punji',
+      say:[{k:'agent',p:'Punji · MSME credit engine'},
+        {k:'in',p:{hi:'GST + cash-flow पर ₹3,00,000 की working-capital line मंज़ूर — 10 सेकंड में। 🎉',
+          en:'₹3,00,000 working-capital line sanctioned on GST + cash-flow — in 10 seconds.'}},
+        {k:'card',p:{color:'var(--teal)',h:'💼 Punji',b:'Working capital <b>₹3,00,000</b> · decision in 10s'}}],
+      fx:()=>{ prodOn('loan'); setTxt('mCredit','₹3,00,000'); feedAdd('P','var(--teal)','Working-capital sanctioned','₹3L · 10-sec cash-flow decision'); score(62); },
+      chips:[{l:{hi:'शानदार! आगे?',en:'Amazing! What next?'},go:'aadat',rec:true}] },
+
+    aadat:{ phase:3, tab:'sikho', agent:'aadat',
+      say:[{k:'agent',p:'Aadat · activate + Sikho · practice'},
+        {k:'in',p:{hi:'आपके खाते में ₹40,000 बेकार पड़े हैं। पहले बिना जोखिम, नकली पैसे से SIP का अभ्यास कीजिए — फिर असली।',
+          en:'₹40,000 is sitting idle. First practise a SIP risk-free with play money — then do it for real.'}},
+        {k:'card',p:{color:'var(--gold)',h:'🎓 Sikho',b:'Practice mode open → <b>₹10,000 play money</b> (see the Sikho tab)'}}],
+      fx:()=>{ feedAdd('A','var(--gold)','Aadat spotted ₹40k idle → routed to Sikho','Fear-free practice before real money'); score(70); },
+      chips:[{l:{hi:'मैंने Sikho में अभ्यास कर लिया',en:'I practised in Sikho'},go:'nivesh',rec:true},{l:{hi:'यह कैसे काम करता है?',en:'How does it work?'},go:'sikhoInfo'}] },
+
+    sikhoInfo:{ phase:3, tab:'sikho',
+      say:[{k:'in',p:{hi:'Sikho tab में ₹10,000 नकली पैसे हैं। वहाँ SIP या UPI का अभ्यास कीजिए — गलती हो तो कुछ नहीं बिगड़ता। तैयार हों तो एक tap में असली।',
+        en:'The Sikho tab has ₹10,000 play money. Practise a SIP or UPI there — mistakes cost nothing. When ready, one tap makes it real.'}}],
+      chips:[{l:{hi:'ठीक है, असली SIP शुरू करो',en:'OK, start the real SIP'},go:'nivesh',rec:true}] },
+
+    nivesh:{ phase:3, tab:'dash', agent:'nivesh',
+      say:[{k:'agent',p:'Nivesh · wealth engine'},
+        {k:'in',p:{hi:'शाबाश! अभ्यास हो गया 👏 अब असली ₹500 का SIP शुरू करें? एक tap में।',en:'Well done — practice complete! Start a real ₹500 SIP now? One tap.'}},
+        {k:'card',p:{color:'var(--gold)',h:'📈 Nivesh',b:'Real <b>₹500/mo SIP</b> started · graduated from Sikho ✅'}}],
+      fx:()=>{ prodOn('sip'); setTxt('mInvest','₹500'); feedAdd('N','var(--gold)','First real SIP started','₹500/mo · practised in Sikho, then graduated'); score(80); },
+      chips:[{l:{hi:'आगे क्या?',en:'What next?'},go:'radar',rec:true}] },
+
+    radar:{ phase:4, tab:'dash', agent:'radar',
+      say:[{k:'agent',p:'Zindagi Radar · life-event engagement'},
+        {k:'in',p:{hi:'दिवाली आ रही है 🪔 और festive credit आया है। बेटी की पढ़ाई के लिए एक goal-SIP शुरू करें?',
+          en:'Diwali is near 🪔 and festive credit landed. Start a goal-SIP for your daughter\'s education?'}}],
+      chips:[{l:{hi:'हाँ, बेटी के लिए',en:'Yes, for my daughter'},go:'radarDone',rec:true},{l:{hi:'नहीं, अभी नहीं',en:'No, not now'},go:'scam'}] },
+
+    radarDone:{ phase:4, tab:'dash', agent:'radar',
+      say:[{k:'card',p:{color:'#8b5cf6',h:'🎯 Zindagi Radar',b:'<b>Goal SIP · Daughter\'s education</b> started'}}],
+      fx:()=>{ prodOn('goal'); feedAdd('Z','#8b5cf6','Life-event nudge → goal SIP','Festive credit + Diwali detected'); score(88); },
+      chips:[{l:{hi:'ठीक है',en:'OK'},go:'scam',rec:true}] },
+
+    scam:{ phase:5, tab:'kavach',
+      say:[{k:'scam',p:{hi:'💰 Collect Request: “Diwali Cashback ₹9,500 — Approve to receive”',en:'Unknown payee · disguised collect request'}},
+        {k:'in',p:{hi:'⚠️ रुकिए! आपको एक request आई है। इससे पहले कि आप कुछ करें — मैं जाँच रहा हूँ।',en:'⚠️ Wait! A request just came in. Before you act — I\'m checking it.'}}],
+      chips:[{l:{hi:'✅ Approve करके ₹9,500 लो',en:'Approve & receive ₹9,500'},go:'kavachBlock',danger:true},
+             {l:{hi:'🛡️ Saarthi, जाँच करो',en:'Saarthi, check it'},go:'kavachBlock',rec:true}] },
+
+    kavachBlock:{ phase:5, tab:'kavach',
+      say:[{k:'agent',p:'Kavach · fraud shield'},
+        {k:'in',p:{hi:'🛑 रुकिए रमेश जी! यह पैसे माँगने वाली request है — आपको ₹9,500 मिलेंगे नहीं, कटेंगे। यह धोखा है, मैंने रोक दिया।',
+          en:'🛑 Stop! This is a COLLECT request — you would SEND ₹9,500, not receive it. It\'s a scam. I\'ve blocked it.'}}],
+      fx:()=>{ triggerKavach(); feedAdd('K','var(--red)','Kavach BLOCKED a scam collect request','Fake ₹9,500 "cashback" · explained in Hindi'); score(96); },
+      chips:[{l:{hi:'शुक्रिया! और क्या कर सकते हो?',en:'Thanks! What else can you do?'},go:'done',rec:true}] },
+
+    done:{ phase:5, tab:'dash', end:true,
+      say:[{k:'in',p:{hi:'रमेश जी — खाता, लोन और दो SIP, सब बातचीत से, हिंदी में, हर रुपया सुरक्षित। ✅ मैं हमेशा यहीं हूँ।',
+        en:'Ramesh — an account, a loan and two SIPs, all by talking, in Hindi, every rupee protected. ✅ I\'m always here.'}}],
+      fx:()=>{ feedAdd('✓','var(--green)','Invisible → funded → protected customer','4 products · 1 conversation · 1 avatar'); },
+      chips:[{l:{hi:'फिर से चलाओ',en:'Replay'},go:'__reset',rec:true}] }
+  };
+
+  const phaseNames=['Find','Onboard','Lend','Practice+Invest','Life-event','Protect'];
+  const prog=document.getElementById('progress'), plab=document.getElementById('plabels');
+  phaseNames.forEach((n,i)=>{ const d=div('pstep'); d.dataset.ph=i; prog.appendChild(d);
+    const l=document.createElement('div'); l.textContent=n; l.dataset.ph=i; plab.appendChild(l); });
+  function markProgress(ph){ document.querySelectorAll('.pstep').forEach(s=>s.classList.toggle('done',+s.dataset.ph<=ph));
+    document.querySelectorAll('.plabels div').forEach(l=>l.classList.toggle('now',+l.dataset.ph===ph)); }
+
+  function renderChips(list){ chipsEl.innerHTML='';
+    list.forEach(c=>{ const b=document.createElement('button');
+      b.className='chip'+(c.danger?' danger':'')+(c.rec?' rec':''); b.textContent=pick(c.l).hi;
+      b.addEventListener('click',()=>choose(c)); chipsEl.appendChild(b); }); }
+
+  async function enter(id){
+    const n=N[id]; if(!n) return; node=id; busy=true; chipsEl.innerHTML='';
+    if(n.tab) switchTab(n.tab); if(n.agent) liveAgent(n.agent); markProgress(n.phase);
+    await saarthiSay(n.say); if(n.fx) n.fx();
+    busy=false; ended=!!n.end;
+    renderChips(n.chips||[]);
+  }
+  async function choose(c){
+    if(busy) return;
+    userSay(pick(c.l).hi);
+    if(c.go==='__reset'){ hardReset(); return; }
+    await enter(c.go);
+    if(autoOn) scheduleAuto();
+  }
+
+  // ---------- free-text intent matcher ----------
+  function normalize(s){ return (s||'').toLowerCase().trim(); }
+  const intents=[
+    { id:'loan', kw:['loan','credit','karza','karz','कर्ज','लोन','paisa chahiye','working capital','udhaar','उधार'], go:'loanDone' },
+    { id:'sip', kw:['sip','invest','nivesh','निवेश','mutual','fund','savings grow','बचत'], go:'nivesh' },
+    { id:'safe', kw:['safe','secure','trust','bharosa','सुरक्षित','भरोसा','fraud safe','is it safe','scam se'], go:'trust' },
+    { id:'scam', kw:['scam','fraud','cheat','dhoka','धोखा','fraud','thug','ठग','block'], go:'scam' },
+    { id:'account', kw:['account','khata','खाता','open account','kyc'], go:'onboard' },
+    { id:'yes', kw:['yes','haan','हाँ','ok','ठीक','sure','chalo','चलो','start'], follow:true },
+    { id:'hi', kw:['hi','hello','namaste','नमस्ते','hey','start'], go:'intro' }
+  ];
+  function handleText(raw){
+    if(busy) return; const t=normalize(raw); if(!t) return;
+    userSay(raw); stopAuto();
+    // "yes"/generic → take recommended chip of current node
+    const cur=N[node];
+    // 1) match against current node's chip labels
+    if(cur&&cur.chips){ for(const c of cur.chips){ const lab=normalize(pick(c.l).en+' '+c.l.hi);
+      if(t.length>1 && (lab.includes(t)||t.includes(normalize(c.l.hi))||sharesWord(t,lab))){ enter(c.go); return; } } }
+    // 2) global intent
+    for(const it of intents){ if(it.kw.some(k=>t.includes(k))){
+      if(it.follow){ const rec=(cur&&cur.chips||[]).find(c=>c.rec)|| (cur&&cur.chips||[])[0]; if(rec){ enter(rec.go); return; } }
+      if(it.go){ enter(it.go); return; } } }
+    // 3) fallback — answer in-place, keep chips
+    freeReply(t);
+  }
+  function sharesWord(a,b){ return a.split(/\s+/).some(w=>w.length>2 && b.includes(w)); }
+  async function freeReply(t){
+    busy=true;
+    let msg={hi:'मैं समझ गया। मैं आपको खाता, loan, SIP और सुरक्षा में मदद कर सकता हूँ — नीचे कोई विकल्प चुनिए या पूछिए।',
+             en:'Got it. I can help with account, loan, SIP and safety — pick an option below or ask me.'};
+    if(t.includes('language')||t.includes('bhasha')||t.includes('भाषा')) msg={hi:'मैं 22 भारतीय भाषाओं में बात करता हूँ — Boliye layer से। ऊपर से भाषा बदल सकते हैं।',en:'I speak 22 Indian languages via the Boliye layer. Switch language from the top.'};
+    if(t.includes('help')||t.includes('madad')||t.includes('मदद')) msg={hi:'बताइए — loan, SIP, खाता या सुरक्षा? नीचे विकल्प भी हैं।',en:'Tell me — loan, SIP, account or safety? Options are below too.'};
+    await saarthiSay([{k:'in',p:msg}]); busy=false;
+  }
+
+  // ---------- Kavach ----------
+  function triggerKavach(){ const sh=document.getElementById('shield'); sh.classList.add('blocked');
+    document.getElementById('shieldRing').textContent='🛑';
+    document.getElementById('shieldStt').textContent='SCAM BLOCKED · ₹9,500 saved';
+    document.getElementById('kexplain').classList.add('show');
+    document.getElementById('kavachTab').classList.add('alert'); }
+  function resetKavach(){ const sh=document.getElementById('shield'); sh.classList.remove('blocked');
+    document.getElementById('shieldRing').textContent='🛡️';
+    document.getElementById('shieldStt').textContent='ALL CLEAR · monitoring every transaction';
+    document.getElementById('kexplain').classList.remove('show');
+    document.getElementById('kavachTab').classList.remove('alert'); }
+  document.getElementById('kSim').addEventListener('click',()=>{ switchTab('kavach'); triggerKavach(); });
+  document.getElementById('kReset').addEventListener('click',resetKavach);
+
+  // ---------- Sikho ----------
+  let bal=10000, practised=false; const simlog=document.getElementById('simlog');
+  function slog(txt,cls){ const e=div('e'+(cls?' '+cls:'')); e.innerHTML=txt; simlog.prepend(e); }
+  document.getElementById('simRun').addEventListener('click',()=>{
+    const amt=Math.max(1,parseInt(document.getElementById('simAmt').value||'0',10));
+    const act=document.getElementById('simAction').value;
+    if(amt>bal){ slog('❌ Not enough play money — exactly the mistake Sikho lets you make safely.'); return; }
+    bal-=amt; document.getElementById('playBal').textContent='₹'+bal.toLocaleString('en-IN');
+    if(act==='upi') slog(`✅ Practice UPI sent <b>₹${amt}</b>. You saw the PIN, confirm & receipt — no real money moved.`,'ok');
+    else slog(`✅ Practice SIP of <b>₹${amt}/mo</b> set up. You saw units, NAV & auto-debit — risk-free.`,'ok');
+    practised=true; document.getElementById('simGrad').disabled=false; });
+  document.getElementById('simGrad').addEventListener('click',()=>{ if(!practised)return;
+    slog('🎓 Graduated! Same action, now <b>REAL</b> — consent + OTP taken. Confidence first, money second.','real');
+    document.getElementById('simGrad').disabled=true;
+    feedAdd('🎓','var(--gold)','User graduated from Sikho','Practised → real, with consent + OTP'); });
+  document.getElementById('simReset').addEventListener('click',()=>{ bal=10000; practised=false;
+    document.getElementById('playBal').textContent='₹10,000'; document.getElementById('simGrad').disabled=true; simlog.innerHTML=''; });
+
+  // ---------- auto-play ----------
+  function scheduleAuto(){ clearTimeout(autoTimer); autoTimer=setTimeout(()=>{ if(!autoOn) return;
+    const n=N[node]; if(!n||!n.chips||n.end){ stopAuto(); return; }
+    const rec=n.chips.find(c=>c.rec)||n.chips[0]; choose(rec); }, 2400); }
+  function startAuto(){ autoOn=true; document.getElementById('playBtn').textContent='⏸ Pause';
+    if(ended||node==='done'){ hardReset(); } scheduleAuto(); }
+  function stopAuto(){ autoOn=false; clearTimeout(autoTimer); document.getElementById('playBtn').textContent='▶ Auto-play'; }
+  document.getElementById('playBtn').addEventListener('click',()=>{ autoOn?stopAuto():startAuto(); });
+
+  // ---------- input wiring ----------
+  const inp=document.getElementById('userInput');
+  document.getElementById('sendBtn').addEventListener('click',()=>{ handleText(inp.value); inp.value=''; });
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter'){ handleText(inp.value); inp.value=''; } });
+
+  // ---------- language ----------
+  document.getElementById('langsel').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
+    lang=b.dataset.lang; document.querySelectorAll('#langsel button').forEach(x=>x.classList.toggle('on',x===b)); });
+
+  // ---------- reset ----------
+  function hardReset(){ stopAuto(); chat.innerHTML=''; chipsEl.innerHTML='';
+    feed.innerHTML='<div class="empty">Talk to Saarthi (or press ▶ Auto-play). Agents act here in real time.</div>';
+    document.querySelectorAll('.prod').forEach(p=>{ p.classList.remove('on'); const b=p.querySelector('.badge'); if(b)b.textContent='locked'; });
+    setTxt('mProducts','0'); setTxt('mCredit','₹0'); setTxt('mInvest','₹0'); setTxt('trustScore','—');
+    liveAgent(''); resetKavach(); switchTab('dash');
+    document.querySelectorAll('.pstep').forEach(s=>s.classList.remove('done'));
+    document.querySelectorAll('.plabels div').forEach(l=>l.classList.remove('now'));
+    ended=false; enter('intro'); }
+  document.getElementById('resetBtn').addEventListener('click',hardReset);
+
+  enter('intro');
+
+  // auto-start when embedded in the pitch reel:  index.html?auto=1
+  try{ var _q=new URLSearchParams(location.search);
+    if(_q.get('auto')==='1'){ setTimeout(function(){ if(!autoOn) startAuto(); }, 1500); } }catch(e){}
+})();
+</script>
+</body>
+</html>

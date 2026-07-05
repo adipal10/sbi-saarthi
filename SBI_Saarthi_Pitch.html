@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SBI Saarthi — Ramesh's Story</title>
+<style>
+  :root{
+    --bg:#070511; --ink:#F6F7FF; --muted:#A6ADD6;
+    --gold:#FBBF24; --amber:#FB923C; --teal:#2DD4BF; --cyan:#38BDF8;
+    --pink:#F472B6; --coral:#FB5773; --green:#34D399; --violet:#8B5CF6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#03020a;font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;overflow:hidden}
+  #wrap{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+  #stage{position:relative;width:1280px;height:720px;border-radius:20px;overflow:hidden;
+    box-shadow:0 40px 120px rgba(0,0,0,.7);background:var(--bg);transform-origin:center center}
+  body.present #teleprompter,body.present #bar,body.present .chapters{display:none}
+  body.present #stage{border-radius:0;box-shadow:none}
+
+  /* ---- living aurora backdrop (drifts across all scenes = continuous flow) ---- */
+  .aurora{position:absolute;inset:-20%;z-index:0;filter:blur(70px);opacity:.9}
+  .blob{position:absolute;border-radius:50%;mix-blend-mode:screen;opacity:.55}
+  .b1{width:620px;height:620px;background:radial-gradient(circle,var(--teal),transparent 68%);left:-6%;top:-8%;animation:drift1 26s ease-in-out infinite}
+  .b2{width:680px;height:680px;background:radial-gradient(circle,var(--violet),transparent 66%);right:-8%;top:8%;animation:drift2 32s ease-in-out infinite}
+  .b3{width:560px;height:560px;background:radial-gradient(circle,var(--gold),transparent 64%);left:26%;bottom:-14%;animation:drift3 30s ease-in-out infinite}
+  .b4{width:460px;height:460px;background:radial-gradient(circle,var(--pink),transparent 66%);right:16%;bottom:-6%;animation:drift1 36s ease-in-out infinite reverse}
+  @keyframes drift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(120px,60px) scale(1.15)}}
+  @keyframes drift2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-110px,80px) scale(1.1)}}
+  @keyframes drift3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(80px,-70px) scale(1.2)}}
+  .grain{position:absolute;inset:0;z-index:1;opacity:.05;pointer-events:none;
+    background-image:radial-gradient(#fff 1px,transparent 1px);background-size:3px 3px}
+
+  /* ---- scenes ---- */
+  .scene{position:absolute;inset:0;z-index:2;opacity:0;visibility:hidden;
+    transition:opacity .85s ease,visibility .85s;padding:70px 82px;
+    display:flex;flex-direction:column;justify-content:center;color:var(--ink)}
+  .scene.on{opacity:1;visibility:visible}
+  .scene::after{content:"";position:absolute;inset:0;z-index:-1;transition:background .9s ease}
+  /* mood overlays let the aurora bleed through differently */
+  .scene.cold::after{background:linear-gradient(160deg,rgba(6,9,26,.9),rgba(9,6,24,.93))}
+  .scene.pain::after{background:radial-gradient(900px 620px at 28% 46%,rgba(30,10,22,.55),rgba(4,3,12,.95))}
+  .scene.hero::after{background:linear-gradient(150deg,rgba(40,18,6,.3),rgba(12,6,26,.55))}
+  .scene.warm::after{background:linear-gradient(160deg,rgba(14,9,32,.6),rgba(10,10,34,.66))}
+
+  .scene.on .up{animation:rise .9s cubic-bezier(.2,.75,.3,1) both}
+  @keyframes rise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+  .d1{animation-delay:.1s!important}.d2{animation-delay:.3s!important}.d3{animation-delay:.55s!important}
+  .d4{animation-delay:.8s!important}.d5{animation-delay:1.05s!important}.d6{animation-delay:1.3s!important}.d7{animation-delay:1.55s!important}
+
+  .kicker{font-size:14px;font-weight:800;letter-spacing:5px;text-transform:uppercase;margin-bottom:16px;
+    color:var(--teal)}
+  .scene.pain .kicker{color:var(--coral)} .scene.hero .kicker,.scene.warm .kicker{color:var(--gold)}
+  h1{font-size:72px;line-height:1.02;font-weight:800;letter-spacing:-1.5px}
+  h1 .g{color:var(--gold)} h1 .t{color:var(--teal)}
+  h2{font-size:50px;line-height:1.08;font-weight:800;letter-spacing:-.5px}
+  .lede{font-size:23px;color:#D7DDFA;line-height:1.55;max-width:900px;margin-top:22px;font-weight:500}
+  .foot{position:absolute;left:82px;bottom:74px;font-size:15px;color:var(--muted);font-weight:600;letter-spacing:1px}
+  .foot b{color:#fff}
+
+  .brandrow{display:flex;align-items:center;gap:24px}
+  .mark{width:104px;height:104px;border-radius:26px;background:linear-gradient(135deg,var(--gold),var(--amber));
+    display:grid;place-items:center;font-weight:800;color:#3a1d00;font-size:50px;
+    box-shadow:0 0 60px rgba(251,191,36,.55),0 18px 50px rgba(0,0,0,.4)}
+  .brandrow .sub{font-size:17px;letter-spacing:8px;color:var(--teal);font-weight:700;margin-top:10px}
+
+  /* big dramatic numbers (not a grid) */
+  .bignum{display:flex;align-items:baseline;gap:26px;margin-top:30px;flex-wrap:wrap}
+  .bignum .n{font-size:96px;font-weight:800;line-height:.9;letter-spacing:-3px}
+  .bignum .n.gold{color:var(--gold)}.bignum .n.coral{color:var(--coral)}.bignum .n.teal{color:var(--teal)}.bignum .n.cyan{color:var(--cyan)}
+  .bignum .cap{font-size:20px;color:#CBD2F5;max-width:280px;font-weight:500;line-height:1.35}
+  .numline{display:flex;gap:44px;margin-top:26px;flex-wrap:wrap}
+  .numline .item{display:flex;flex-direction:column}
+  .numline .item .nn{font-size:56px;font-weight:800;line-height:1}
+  .numline .item .ll{font-size:16px;color:#CBD2F5;margin-top:8px;max-width:220px;line-height:1.35}
+  .src{position:absolute;right:82px;bottom:44px;font-size:12px;color:#5a648f;font-style:italic;max-width:520px;text-align:right}
+
+  /* gap: three seams */
+  .seams{display:flex;align-items:center;gap:0;margin-top:36px}
+  .seam{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;text-align:center}
+  .seam .st{font-size:22px;font-weight:800;color:#fff}.seam .ss{font-size:14px;color:var(--muted);margin-top:6px}
+  .seamgap{width:38px;text-align:center;color:var(--coral);font-size:30px;font-weight:800}
+  .arrowto{margin-top:24px;font-size:22px;font-weight:700;color:var(--gold)}
+
+  /* ---- RAMESH pain scene ---- */
+  #ramesh{flex-direction:row;align-items:center;gap:56px}
+  .rface{position:relative;flex:none;width:360px;height:360px;display:grid;place-items:center}
+  .rface .halo{position:absolute;width:300px;height:300px;border-radius:50%;
+    background:radial-gradient(circle,rgba(251,87,115,.22),transparent 70%);animation:pulse 3.4s ease-in-out infinite}
+  @keyframes pulse{50%{transform:scale(1.08);opacity:.7}}
+  .rface .av{width:210px;height:210px;border-radius:50%;font-size:112px;display:grid;place-items:center;
+    background:linear-gradient(135deg,#33405f,#1c2740);box-shadow:0 20px 50px rgba(0,0,0,.5);filter:grayscale(.35)}
+  .rface .stamp{position:absolute;top:26px;right:2px;transform:rotate(-16deg);border:4px solid var(--coral);
+    color:var(--coral);font-weight:800;font-size:22px;letter-spacing:3px;padding:6px 14px;border-radius:10px;
+    opacity:.92;background:rgba(20,6,12,.35)}
+  .painbubbles{display:flex;flex-direction:column;gap:16px;max-width:640px}
+  .rtitle{font-size:44px;font-weight:800;margin-bottom:6px}
+  .rsub{font-size:19px;color:#C6CEF2;margin-bottom:16px;line-height:1.5}
+  .pbub{display:flex;align-items:center;gap:14px;background:rgba(251,87,115,.1);border:1px solid rgba(251,87,115,.32);
+    border-radius:14px;padding:14px 18px;font-size:19px;font-weight:600;color:#FBD6DE}
+  .pbub .pe{font-size:24px}
+
+  /* hero: saarthi arrives */
+  #hero{align-items:flex-start}
+  .oneline{font-size:34px;font-weight:700;line-height:1.42;max-width:1040px;margin-top:24px;color:#fff}
+  .oneline .h{color:var(--gold)} .oneline .t{color:var(--teal)}
+  .watch{margin-top:30px;font-size:26px;font-weight:800;color:var(--gold);letter-spacing:1px}
+
+  /* prototype embed */
+  #protoScene{padding:0;background:#0a1428}
+  .proto-cap{position:absolute;top:24px;left:50%;transform:translateX(-50%);z-index:6;
+    background:rgba(10,16,40,.72);border:1px solid rgba(45,212,191,.4);backdrop-filter:blur(8px);
+    padding:12px 28px;border-radius:14px;font-size:22px;font-weight:800;color:#fff;white-space:nowrap;
+    box-shadow:0 12px 34px rgba(0,0,0,.5);transition:.4s}
+  .proto-cap .em{color:var(--gold)}
+  .frameScaler{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  #protoFrame{width:1330px;height:838px;border:0;transform:scale(.855);transform-origin:center center;border-radius:14px;background:#0B1E3F}
+
+  /* architecture */
+  .avatarhub{display:flex;flex-direction:column;align-items:center;gap:18px;margin-top:10px}
+  .hub{width:118px;height:118px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--amber));
+    display:grid;place-items:center;color:#3a1d00;font-weight:800;font-size:19px;text-align:center;line-height:1.05;
+    box-shadow:0 0 0 12px rgba(251,191,36,.12),0 0 60px rgba(251,191,36,.5)}
+  .agents6{display:grid;grid-template-columns:repeat(6,1fr);gap:13px;width:100%;margin-top:6px}
+  .a6{background:rgba(255,255,255,.06);border:1px solid rgba(45,212,191,.28);border-radius:13px;padding:14px 8px;text-align:center}
+  .a6 .an{font-weight:800;font-size:15px;color:#fff}.a6 .ar{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .rails{display:flex;gap:11px;justify-content:center;margin-top:24px;flex-wrap:wrap}
+  .rail{background:rgba(45,212,191,.13);border:1px solid rgba(45,212,191,.45);color:#9cf0e5;
+    padding:10px 18px;border-radius:999px;font-size:15px;font-weight:700}
+  .layerline{text-align:center;margin-top:18px;font-size:17px;color:var(--gold);font-weight:700;letter-spacing:1px}
+
+  /* doors */
+  .doors{display:flex;gap:24px;margin-top:34px;align-items:stretch}
+  .door{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:28px}
+  .door .dh{font-size:24px;font-weight:800;display:flex;align-items:center;gap:12px}
+  .door .dl{font-size:16.5px;color:#D2D9F8;margin-top:12px;line-height:1.5}
+  .door.wa{border-color:rgba(52,211,153,.4)}.door.wa .dh{color:#34D399}
+  .door.yono{border-color:rgba(56,189,248,.4)}.door.yono .dh{color:var(--cyan)}
+  .plus{display:grid;place-items:center;font-size:44px;color:var(--gold);font-weight:800}
+  .doorfoot{text-align:center;font-size:23px;font-weight:800;color:#fff;margin-top:26px}
+  .doorfoot .h{color:var(--gold)}
+
+  /* trust */
+  .trustrow{display:flex;flex-direction:column;gap:16px;margin-top:28px;max-width:1010px}
+  .tline{display:flex;align-items:center;gap:20px;background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:20px 26px}
+  .tline .ti{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;font-size:26px;flex:none}
+  .tline .tt{font-size:23px;font-weight:800}.tline .ts{font-size:15.5px;color:#CBD2F5;margin-top:3px}
+
+  /* differentiators */
+  .diffs{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:26px}
+  .diff{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:15px;padding:20px 22px;display:flex;gap:16px}
+  .diff .de{font-size:30px;flex:none}.diff .dt{font-size:19px;font-weight:800;color:#fff}
+  .diff .dd{font-size:14.5px;color:#CBD2F5;margin-top:4px;line-height:1.4}
+
+  /* close */
+  .closebig{font-size:66px;font-weight:800;line-height:1.06;letter-spacing:-1px}
+  .closebig .g{color:var(--gold)}
+  .closesub{font-size:23px;color:#D2D9F8;margin-top:22px;font-weight:500;max-width:920px;line-height:1.5}
+  .arc{display:flex;gap:14px;align-items:center;margin-top:22px;font-size:20px;font-weight:800}
+  .arc .a{padding:8px 16px;border-radius:999px}
+  .arc .a1{background:rgba(251,87,115,.18);color:#FBA5B6;border:1px solid rgba(251,87,115,.4)}
+  .arc .a2{background:rgba(251,191,36,.18);color:var(--gold);border:1px solid rgba(251,191,36,.4)}
+  .arc .a3{background:rgba(52,211,153,.18);color:#7EE7BE;border:1px solid rgba(52,211,153,.4)}
+  .arc .ar{color:var(--muted);font-weight:800}
+
+  /* burned-in caption (subtitle) */
+  .caption{position:absolute;left:0;right:0;bottom:34px;z-index:7;text-align:center;pointer-events:none}
+  .caption span{display:inline-block;background:rgba(5,6,18,.62);backdrop-filter:blur(6px);
+    border:1px solid rgba(255,255,255,.12);color:#fff;font-size:24px;font-weight:700;letter-spacing:.2px;
+    padding:10px 24px;border-radius:12px;box-shadow:0 8px 26px rgba(0,0,0,.45);
+    opacity:0;transform:translateY(12px);transition:opacity .4s,transform .4s}
+  .caption.show span{opacity:1;transform:none}
+
+  .prog{position:absolute;top:0;left:0;height:5px;z-index:8;width:0;
+    background:linear-gradient(90deg,var(--teal),var(--gold));transition:width .15s linear}
+
+  /* chapter timeline (out of recording in present mode) */
+  .chapters{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:8;display:flex;gap:5px}
+  .chapters .c{width:34px;height:5px;border-radius:3px;background:rgba(255,255,255,.2);cursor:pointer;transition:.2s}
+  .chapters .c.on{background:var(--gold);width:52px}
+  .chapters .c.past{background:rgba(251,191,36,.45)}
+
+  #bar{display:flex;align-items:center;gap:11px;color:#cfe0ff;font-size:13px}
+  #bar button{border:0;border-radius:10px;padding:10px 15px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;
+    background:rgba(255,255,255,.1);color:#e6efff;border:1px solid rgba(255,255,255,.16)}
+  #bar button.play{background:linear-gradient(135deg,var(--gold),var(--amber));color:#3a1d00;border:0}
+  #bar .sceneName{min-width:230px;font-weight:700;color:#fff}
+  #bar .clock{font-variant-numeric:tabular-nums;color:var(--muted)}
+  #teleprompter{width:1280px;max-width:94vw;background:#0a0b18;border:1px solid #1c2440;border-radius:12px;padding:12px 20px;
+    color:#c7d6f0;font-size:15.5px;line-height:1.5;display:flex;gap:14px;align-items:flex-start}
+  #teleprompter .lbl{color:var(--gold);font-weight:800;font-size:11px;letter-spacing:1px;white-space:nowrap;margin-top:2px}
+  #teleprompter b{color:#fff}
+  .tag-hint{position:fixed;top:8px;right:12px;color:#38425f;font-size:12px}
+</style>
+</head>
+<body>
+<div class="tag-hint">Space = play/pause · ← → scenes · P = present (hide UI) · F = fullscreen · T = teleprompter</div>
+<div id="wrap">
+  <div id="stage">
+    <div class="aurora"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div></div>
+    <div class="grain"></div>
+    <div class="prog" id="prog"></div>
+
+    <!-- 1 HOOK -->
+    <section class="scene cold on" data-dur="7" data-name="Hook">
+      <div class="brandrow up d1">
+        <div class="mark">सा</div>
+        <div><h1>SBI <span class="g">Saarthi</span></h1><div class="sub">SPEAK · LEARN · PROTECT</div></div>
+      </div>
+      <div class="lede up d3">Half a billion Indians have a bank account.<br/>Most never use it for more than a balance check.<br/><span style="color:var(--gold);font-weight:700">This is the story of one of them.</span></div>
+      <div class="foot up d5">Agentic AI &amp; Emerging Tech &nbsp;·&nbsp; <b>SBI Hackathon @ Global Fintech Fest 2026</b></div>
+    </section>
+
+    <!-- 2 PROBLEM -->
+    <section class="scene cold" data-dur="11" data-name="The Problem">
+      <div class="kicker up d1">The problem · creditworthy, but invisible</div>
+      <div class="bignum up d1"><div class="n coral">14%</div><div class="cap">of India's <b style="color:#fff">6.3 crore</b> MSMEs can get any formal credit</div></div>
+      <div class="numline">
+        <div class="item up d3"><div class="nn" style="color:var(--gold)">₹25L cr</div><div class="ll">MSME formal-credit gap — could exceed ₹50 lakh crore</div></div>
+        <div class="item up d4"><div class="nn" style="color:var(--teal)">3.68 cr</div><div class="ll">of 6.3 cr MSMEs ever got formal credit</div></div>
+        <div class="item up d5"><div class="nn" style="color:var(--cyan)">90%</div><div class="ll">of Indians are not comfortable in English</div></div>
+      </div>
+      <div class="src up d6">Sources: Udyam portal · RBI / Deloitte MSME credit-gap estimates · Bhashini / NITI Aayog. Calibrated ranges.</div>
+    </section>
+
+    <!-- 3 GAP -->
+    <section class="scene cold" data-dur="9" data-name="The Gap">
+      <div class="kicker up d1">And the ones already inside?</div>
+      <h2 class="up d1"><span style="color:var(--gold)">74 million</span> YONO users — most only check a balance.</h2>
+      <div class="seams">
+        <div class="seam up d2"><div class="st">Acquire</div><div class="ss">can't see them</div></div>
+        <div class="seamgap up d2">⟂</div>
+        <div class="seam up d3"><div class="st">Adopt</div><div class="ss">base sits idle</div></div>
+        <div class="seamgap up d3">⟂</div>
+        <div class="seam up d4"><div class="st">Engage</div><div class="ss">bank barely seen</div></div>
+      </div>
+      <div class="arrowto up d5">Three broken systems — one missing link.</div>
+    </section>
+
+    <!-- 4 RAMESH (pain) -->
+    <section class="scene pain" id="ramesh" data-dur="12" data-name="Meet Ramesh · the pain">
+      <div class="rface up d1">
+        <div class="halo"></div>
+        <div class="av">🧑🏽</div>
+        <div class="stamp">DECLINED</div>
+      </div>
+      <div class="painbubbles">
+        <div class="up d1"><div class="rtitle">Meet Ramesh</div>
+          <div class="rsub">He runs a kirana store. His shop lives on UPI — but the bank cannot see him.</div></div>
+        <div class="pbub up d2"><span class="pe">📲</span> Earns daily on UPI · files GST</div>
+        <div class="pbub up d3"><span class="pe">❌</span> No credit history — every bank said no</div>
+        <div class="pbub up d4"><span class="pe">🔤</span> Forms are in English he can't read</div>
+        <div class="pbub up d5"><span class="pe">👻</span> Creditworthy on paper — invisible in the system</div>
+      </div>
+    </section>
+
+    <!-- 5 SAARTHI ARRIVES -->
+    <section class="scene hero" id="hero" data-dur="9" data-name="Then comes Saarthi">
+      <div class="brandrow up d1">
+        <div class="mark" style="width:84px;height:84px;font-size:40px;border-radius:20px">सा</div>
+        <div><h1 style="font-size:52px">Then comes <span class="g">Saarthi</span>.</h1></div>
+      </div>
+      <div class="oneline up d2">One AI companion that <span class="h">finds</span> Ramesh, <span class="h">onboards</span> him in one chat, <span class="h">funds</span> his shop, grows his wealth, and <span class="h">protects</span> him for life —<br/>all on <span class="t">WhatsApp, in Hindi</span>.</div>
+      <div class="watch up d4">Watch. ▸</div>
+    </section>
+
+    <!-- 6 LIVE PROTOTYPE -->
+    <section class="scene" id="protoScene" data-dur="48" data-name="Live Prototype · Ramesh's journey">
+      <div class="proto-cap" id="protoCap"><span class="em">●</span> Live prototype — Ramesh's journey</div>
+      <div class="frameScaler"><iframe id="protoFrame" title="Saarthi live demo"></iframe></div>
+    </section>
+
+    <!-- 7 ARCHITECTURE -->
+    <section class="scene warm" data-dur="11" data-name="Architecture">
+      <div class="kicker up d1">Behind the conversation · one avatar, one memory</div>
+      <div class="avatarhub up d1">
+        <div class="hub">Saarthi<br/><span style="font-size:12px">one memory</span></div>
+        <div class="agents6">
+          <div class="a6 up d2"><div class="an">Pehchaan</div><div class="ar">find + qualify</div></div>
+          <div class="a6 up d2"><div class="an">Ek Baat-cheet</div><div class="ar">onboard</div></div>
+          <div class="a6 up d3"><div class="an">Punji</div><div class="ar">MSME credit</div></div>
+          <div class="a6 up d3"><div class="an">Aadat</div><div class="ar">activate</div></div>
+          <div class="a6 up d4"><div class="an">Nivesh</div><div class="ar">grow wealth</div></div>
+          <div class="a6 up d4"><div class="an">Zindagi Radar</div><div class="ar">life-events</div></div>
+        </div>
+      </div>
+      <div class="rails up d5"><span class="rail">Account Aggregator</span><span class="rail">Bhashini · 22 languages</span><span class="rail">SBI 10-sec loan engine</span><span class="rail">Aadhaar + DigiLocker</span></div>
+      <div class="layerline up d6">Three layers under every agent — Boliye · speak &nbsp;|&nbsp; Sikho · learn &nbsp;|&nbsp; Kavach · protect</div>
+    </section>
+
+    <!-- 8 WHATSAPP + YONO -->
+    <section class="scene warm" data-dur="9" data-name="WhatsApp + YONO">
+      <div class="kicker up d1">Distribution · one brain, two doorways</div>
+      <div class="doors">
+        <div class="door wa up d2"><div class="dh">💬 WhatsApp + IVR</div><div class="dl">The front door. Reaches invisible MSMEs, feature phones, first-time users with no app — acquisition.</div></div>
+        <div class="plus up d3">＋</div>
+        <div class="door yono up d4"><div class="dh">📱 YONO 2.0</div><div class="dl">The same agent + memory graph, embedded inside YONO for the 74M base — adoption &amp; engagement.</div></div>
+      </div>
+      <div class="doorfoot up d5">“WhatsApp is the front door — it <span class="h">plugs into YONO, not competes</span> with it.”</div>
+    </section>
+
+    <!-- 9 TRUST -->
+    <section class="scene warm" data-dur="9" data-name="Trust">
+      <div class="kicker up d1">For a public bank, trust is the product</div>
+      <div class="trustrow">
+        <div class="tline up d2"><div class="ti" style="background:rgba(56,189,248,.25)">🔐</div>
+          <div><div class="tt">Consented Account Aggregator data</div><div class="ts">Explicit, purpose-bound, revocable. No scraping. DPDP + RBI aligned.</div></div></div>
+        <div class="tline up d3"><div class="ti" style="background:rgba(45,212,191,.25)">🤝</div>
+          <div><div class="tt">Human-in-the-loop on every agent</div><div class="ts">No unsupervised high-value decisions — every agent escalates to a BC or RM.</div></div></div>
+        <div class="tline up d4"><div class="ti" style="background:rgba(251,87,115,.25)">🛡️</div>
+          <div><div class="tt">Anti-deepfake voice + Kavach shield</div><div class="ts">Voice-liveness &amp; OTP step-up on every voice transaction — a live, flagged risk.</div></div></div>
+      </div>
+    </section>
+
+    <!-- 10 DIFFERENTIATORS -->
+    <section class="scene warm" data-dur="11" data-name="What makes us different">
+      <div class="kicker up d1">Why Saarthi wins · our edge</div>
+      <div class="diffs">
+        <div class="diff up d2"><div class="de">🎓</div><div><div class="dt">Sikho — flight simulator for banking</div><div class="dd">₹10,000 play money to practise UPI, SIP, insurance. Kills Bharat's #1 blocker: fear of losing money. Nobody has shipped this.</div></div></div>
+        <div class="diff up d3"><div class="de">🛡️</div><div><div class="dt">Kavach — a fraud shield you can hear</div><div class="dd">“You are SENDING, not receiving.” Plain-Hindi scam blocks, elder-safe mode, trusted-family alerts.</div></div></div>
+        <div class="diff up d4"><div class="de">🪔</div><div><div class="dt">Festival &amp; life-event aware</div><div class="dd">Diwali, harvest, weddings, school fees — culturally-timed engagement no global bank does. India-native.</div></div></div>
+        <div class="diff up d5"><div class="de">✅</div><div><div class="dt">Completes real products, not chat</div><div class="dd">A loan and an SIP opened live, by talking — on WhatsApp and inside YONO, one shared memory.</div></div></div>
+      </div>
+    </section>
+
+    <!-- 11 CLOSE -->
+    <section class="scene hero" data-dur="9" data-name="Close">
+      <div class="arc up d1"><span class="a a1">Invisible</span><span class="ar">→</span><span class="a a2">Funded</span><span class="ar">→</span><span class="a a3">Protected · for life</span></div>
+      <div class="closebig up d2" style="margin-top:24px">Banking that <span class="g">speaks your language.</span></div>
+      <div class="closesub up d3">Saarthi finds every Indian · onboards in one conversation · funds the business · grows the wealth · protects for life.</div>
+      <div class="brandrow up d4" style="margin-top:30px">
+        <div class="mark" style="width:64px;height:64px;font-size:30px;border-radius:16px">सा</div>
+        <div><div style="font-size:26px;font-weight:800">SBI <span style="color:var(--gold)">Saarthi</span></div><div class="sub" style="font-size:12px;letter-spacing:6px">SPEAK · LEARN · PROTECT</div></div>
+      </div>
+    </section>
+
+    <div class="caption" id="caption"><span></span></div>
+    <div class="chapters" id="chapters"></div>
+  </div>
+
+  <div id="teleprompter"><span class="lbl">VOICEOVER</span><span id="voText"></span></div>
+
+  <div id="bar">
+    <button class="play" id="playBtn">▶ Play</button>
+    <button id="prevBtn">◀ Prev</button>
+    <button id="nextBtn">Next ▶</button>
+    <button id="restartBtn">↺ Restart</button>
+    <span class="sceneName" id="sceneName"></span>
+    <span class="clock" id="clock"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  const scenes=[...document.querySelectorAll('.scene')];
+  const chapters=document.getElementById('chapters'), prog=document.getElementById('prog');
+  const frame=document.getElementById('protoFrame'), capEl=document.getElementById('caption');
+  let cur=0, playing=false, loop=null, sceneStart=0;
+
+  // per-scene voiceover (teleprompter) + burned-in captions {t sec, x}
+  const VO=[
+    "Half a billion Indians have a bank account. Most never use it for more than a balance check. This is the story of one of them.",
+    "India has 6.3 crore small businesses. Only 14 percent can get formal credit. They earn on UPI, they file GST — yet to the bank, they're invisible. A 25 lakh crore rupee gap.",
+    "And the ones already inside? 74 million YONO users — most only check a balance. Acquire, adopt, engage: three broken systems, one missing link.",
+    "Meet Ramesh. He runs a kirana store. His shop lives on UPI, but he has no credit history, the forms are in English, and every bank has said no. The system simply cannot see him.",
+    "Until now. Saarthi is one AI companion that finds Ramesh, onboards him, funds his shop, and stays for life — all on WhatsApp, in Hindi. Watch.",
+    "Pehchaan finds him from his own UPI and GST data. Ek Baat-cheet opens his account in a single Hindi chat — no forms, no branch. Punji sanctions three lakh rupees in ten seconds. Aadat spots his idle cash and sends him to Sikho, where he practises investing with play money — risk-free — before Nivesh starts a real SIP. Zindagi Radar sees Diwali coming and offers a goal fund for his daughter. And when a scam arrives, Kavach blocks it — and explains why, in Hindi.",
+    "Behind the conversation: one avatar, six agents, one shared memory — sitting on Account Aggregator, Bhashini, and SBI's own loan engine. Three layers under every agent: speak, learn, protect.",
+    "WhatsApp is the front door — it reaches people who don't have the app yet. And the same brain plugs into YONO 2.0. One agent, two doorways — not competing, completing.",
+    "For a public bank, trust is the product. Consented Account Aggregator data. A human in the loop on every agent. And anti-deepfake voice on every transaction.",
+    "What sets us apart? A flight simulator that kills the fear of losing money. A fraud shield that speaks plain Hindi. Festival and life-event awareness no global bank has. And real products — a loan, an SIP — completed live, not just talked about.",
+    "From invisible, to funded, to protected — for life. Saarthi. Banking that speaks your language."
+  ];
+  const CAPS=[
+    [[0,"500 million bank accounts"],[3.2,"Most, barely used"],[5.2,"This is one story"]],
+    [[0,"6.3 crore small businesses"],[3.5,"Only 14% can get credit"],[7,"Creditworthy — yet invisible"],[9.3,"A ₹25 lakh crore gap"]],
+    [[0,"74M YONO users, mostly idle"],[3.3,"Acquire · Adopt · Engage"],[6,"Three systems, one missing link"]],
+    [[0,"Meet Ramesh"],[2.6,"His shop runs on UPI"],[5,"No credit history · English forms"],[8,"Every bank said no"],[10.3,"Invisible to the system"]],
+    [[0,"Then comes Saarthi"],[2.8,"Finds · Onboards · Funds · Protects"],[5.6,"On WhatsApp. In Hindi."],[7.6,"Watch."]],
+    [], // demo scene uses the rotating proto caption instead
+    [[0,"One avatar · six agents"],[3,"One shared memory"],[5.6,"On AA · Bhashini · SBI's engine"],[8.6,"Speak · Learn · Protect"]],
+    [[0,"WhatsApp — the front door"],[3.3,"Plugs into YONO 2.0"],[6.2,"One brain, two doorways"]],
+    [[0,"Consented AA data"],[3,"Human-in-the-loop"],[6,"Anti-deepfake voice"]],
+    [[0,"Sikho — practise, then real"],[3,"Kavach — fraud you can hear"],[6,"Festival-aware · India-native"],[8.6,"Real products, completed live"]],
+    [[0,"Invisible → Funded → Protected"],[3,"SBI Saarthi"],[5,"Banking that speaks your language"]]
+  ];
+
+  scenes.forEach((s,i)=>{ const c=document.createElement('div'); c.className='c'+(i===0?' on':'');
+    c.addEventListener('click',()=>{ stop(); go(i); }); chapters.appendChild(c); });
+
+  const PROTO=scenes.findIndex(s=>s.id==='protoScene');
+  function loadProto(){ frame.src='index.html?auto=1&t='+Date.now(); }
+  function unloadProto(){ frame.src='about:blank'; }
+
+  const protoCaps=[
+    [2,'<span class="em">Pehchaan</span> — finds Ramesh from UPI + GST'],
+    [9,'<span class="em">Ek Baat-cheet</span> — account opened in one Hindi chat'],
+    [16,'<span class="em">Punji</span> — ₹3,00,000 sanctioned in 10 seconds'],
+    [24,'<span class="em">Aadat → Sikho</span> — practise with ₹10,000 play money'],
+    [31,'<span class="em">Nivesh</span> — a real ₹500 SIP begins'],
+    [37,'<span class="em">Zindagi Radar</span> — Diwali goal-SIP for his daughter'],
+    [43,'<span class="em">Kavach</span> — blocks a scam, explains it in Hindi 🛑']
+  ];
+  function protoCapReset(){ const c=document.getElementById('protoCap'); if(c) c.innerHTML='<span class="em">●</span> Live prototype — Ramesh\'s journey'; }
+
+  // caption engine (driven by elapsed, pause-safe)
+  let lastCap='';
+  function setCaption(txt){ if(txt===lastCap) return; lastCap=txt;
+    const span=capEl.querySelector('span');
+    capEl.classList.remove('show');
+    setTimeout(()=>{ span.textContent=txt; if(txt) capEl.classList.add('show'); }, txt?160:0);
+  }
+  function updateCaption(i,elSec){
+    if(i===PROTO){ // rotating proto caption
+      const c=document.getElementById('protoCap'); let pick=null;
+      for(const pc of protoCaps){ if(elSec>=pc[0]) pick=pc[1]; }
+      if(pick) c.innerHTML=pick; setCaption(''); return;
+    }
+    const list=CAPS[i]||[]; let txt='';
+    for(const b of list){ if(elSec>=b[0]) txt=b[1]; }
+    setCaption(txt);
+  }
+
+  function enter(i){
+    const s=scenes[i];
+    document.getElementById('sceneName').textContent=(i+1)+'/'+scenes.length+'  ·  '+s.dataset.name;
+    document.getElementById('voText').textContent=VO[i]||'';
+    lastCap=''; capEl.classList.remove('show');
+    if(i===PROTO){ loadProto(); protoCapReset(); }
+    updateCaption(i,0);
+  }
+  function go(i){
+    if(i<0)i=0; if(i>=scenes.length)i=scenes.length-1;
+    if(cur===PROTO && i!==PROTO) unloadProto();
+    scenes[cur].classList.remove('on'); cur=i; scenes[cur].classList.add('on');
+    [...chapters.children].forEach((c,k)=>{ c.classList.toggle('on',k===i); c.classList.toggle('past',k<i); });
+    enter(cur); sceneStart=performance.now();
+  }
+  function tick(){
+    if(!playing) return;
+    const dur=(+scenes[cur].dataset.dur||8)*1000;
+    const el=performance.now()-sceneStart, p=Math.min(1,el/dur);
+    prog.style.width=(p*100)+'%';
+    document.getElementById('clock').textContent=Math.max(0,Math.ceil((dur-el)/1000))+'s';
+    updateCaption(cur, el/1000);
+    if(el>=dur){ if(cur>=scenes.length-1){ stop(); return; } go(cur+1); }
+  }
+  function play(){ if(playing)return; playing=true; document.getElementById('playBtn').textContent='⏸ Pause';
+    if(cur>=scenes.length-1){ go(0); } sceneStart=performance.now(); clearInterval(loop); loop=setInterval(tick,90); }
+  function stop(){ playing=false; clearInterval(loop); document.getElementById('playBtn').textContent='▶ Play'; }
+  function toggle(){ playing?stop():play(); }
+
+  document.getElementById('playBtn').addEventListener('click',toggle);
+  document.getElementById('nextBtn').addEventListener('click',()=>{ stop(); go(Math.min(cur+1,scenes.length-1)); });
+  document.getElementById('prevBtn').addEventListener('click',()=>{ stop(); go(Math.max(cur-1,0)); });
+  document.getElementById('restartBtn').addEventListener('click',()=>{ stop(); go(0); prog.style.width='0'; });
+  document.addEventListener('keydown',e=>{
+    if(e.code==='Space'){ e.preventDefault(); toggle(); }
+    else if(e.code==='ArrowRight'){ stop(); go(Math.min(cur+1,scenes.length-1)); }
+    else if(e.code==='ArrowLeft'){ stop(); go(Math.max(cur-1,0)); }
+    else if(e.key==='p'||e.key==='P'){ document.body.classList.toggle('present'); fitStage(); }
+    else if(e.key==='t'||e.key==='T'){ const tp=document.getElementById('teleprompter'); tp.style.display=tp.style.display==='none'?'flex':'none'; }
+    else if(e.key==='f'||e.key==='F'){ if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+  });
+  function fitStage(){ const stage=document.getElementById('stage'), present=document.body.classList.contains('present');
+    const availW=window.innerWidth-(present?0:40), availH=window.innerHeight-(present?0:150);
+    stage.style.transform='scale('+Math.min(availW/1280,availH/720)+')'; }
+  window.addEventListener('resize',fitStage); fitStage();
+  enter(0);
+})();
+</script>
+</body>
+</html>
